@@ -1,0 +1,33 @@
+# Note: order matters
+Alias /images /var/lib/phpbb3/images
+DocumentRoot /usr/share/phpbb3/www/
+
+<Directory /usr/share/phpbb3/www/>
+        <IfModule mod_php5.c>
+                php_flag register_globals off
+        </IfModule>
+
+        Options -Indexes +FollowSymlinks
+
+        DirectoryIndex index.php
+
+        <IfVersion >= 2.3>
+                Require all granted
+        </IfVersion>
+        <IfVersion < 2.3>
+                AllowOverride None
+                order allow,deny
+                allow from all
+        </IfVersion>
+</Directory>
+<Directory /var/lib/phpbb3/images>
+        <IfVersion >= 2.3>
+                Require all granted
+        </IfVersion>
+        <IfVersion < 2.3>
+                AllowOverride None
+                order allow,deny
+                allow from all
+        </IfVersion>
+</Directory>
+

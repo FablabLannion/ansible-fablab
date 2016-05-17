@@ -1,0 +1,112 @@
+---
+#extra packages
+extra_packages:
+ - fail2ban
+ - ngrep
+ - elinks
+ - byobu
+ - vim
+ - aptitude
+ - apache2
+ - phpbb3
+ - phpbb3-l10n
+ - phpmyadmin
+ - phpldapadmin
+ - ssl-cert
+ - python-passlib
+ - python3-passlib
+
+#Domain
+domain: fablab-lannion.opensteak.fr
+
+#MediaWiki
+mwiki_src: https://releases.wikimedia.org/mediawiki/1.26/mediawiki-1.26.2.tar.gz
+mwiki_dest: /var/www/html
+mwiki_version: 1.26.2
+
+# Lets encrypt
+letsencrypt_webroot_path: /var/www/html
+letsencrypt_email: contact@fablab-lannion.org
+letsencrypt_cert_domains:
+  - "{{ domain }}"
+  - "www.{{ domain }}"
+  - "wiki.{{ domain }}"
+  - "forum.{{ domain }}"
+  - "admin.{{ domain }}"
+letsencrypt_renewal_command_args: '--renew-hook "systemctl restart apache"'
+
+#admin portal password
+httpauth_admin_pwd: "{{ pass_httpauth }}"
+
+# Wordpress
+wp_version: 4.5.1
+wp_install_dir: '/var/www/html/wordpress'
+wp_db_name: 'wordpress'
+wp_db_user: 'wordpress'
+wp_db_password: "{{ pass_db_wp }}"
+wp_db_host: 'localhost'
+
+#SLAPD
+openldap_server_domain_name: fablab-lannion.org
+openldap_server_rootpw: "{{ pass_openldap_rootpw }}"
+
+#MYSQL
+dbrootpass: "{{ pass_db_root }}"
+databases:
+ - dbname: "{{ wp_db_name }}" 
+   dbuser: "{{ wp_db_user }}"
+   dbpass: "{{ pass_db_wp }}"
+ - dbname: phpbb
+   dbuser: phpbb
+   dbpass: "{{ pass_db_phpbb }}"
+ - dbname: mediawiki
+   dbuser: mediawiki
+   dbpass: "{{ pass_db_mediawiki }}"
+
+#Apache
+
+apache_default_certificate_file: "/etc/letsencrypt/live/{{ domain }}/fullchain.pem"
+apache_default_certificate_key_file: "/etc/letsencrypt/live/{{ domain }}/privkey.pem"
+apache_mods_enabled:
+  - rewrite.load
+  - ssl.load
+apache_includes:
+  - name: mediawiki.conf
+    src: templates/fablab/mediawiki-apache.conf.j2
+  - name: phpbb3.conf
+    src: templates/fablab/phpbb3-apache.conf.j2
+apache_remove_default_vhost: true
+apache_vhosts:
+  - servername: "www.{{ domain }}"
+    serveralias: "{{ domain }}"
+    documentroot: '/var/www/html/wordpress'
+  - servername: "wiki.{{ domain }}"
+    extra_parameters: |
+      Include 'includes/mediawiki.conf'
+  - servername: "forum.{{ domain }}"
+    extra_parameters: |
+      Include 'includes/phpbb3.conf'
+  - servername: "admin.{{ domain }}"
+    extra_parameters: |
+      Redirect "/" "https://admin.{{ domain }}/"
+apache_vhosts_ssl:
+  - servername: "www.{{ domain }}"
+    serveralias: "{{ domain }}"
+    documentroot: '/var/www/html/wordpress'
+  - servername: "wiki.{{ domain }}"
+    extra_parameters: |
+      Include 'includes/mediawiki.conf'
+  - servername: "forum.{{ domain }}"
+    extra_parameters: |
+      Include 'includes/phpbb3.conf'
+  - servername: "admin.{{ domain }}"
+    documentroot: '/var/www/html/'
+    extra_parameters: |
+      <Location />
+          AuthUserFile includes/admin_auth.htpasswd
+          AuthName "None shall pass says the Black Knight"
+          AuthType Basic
+          require valid-user
+        </Location>
+        Include '/etc/phpmyadmin/apache.conf'
+        Include '/etc/phpldapadmin/apache.conf'

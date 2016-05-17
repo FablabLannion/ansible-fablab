@@ -1,0 +1,2 @@
+[fablab]
+fablab.local ansible_connection=local

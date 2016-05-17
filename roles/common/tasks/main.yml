@@ -1,0 +1,31 @@
+---
+- name: Install required packages
+  apt:
+    name: "{{ item }}"
+    state: 'present'
+    install_recommends: False
+  with_items: "{{ common_packages | default([])  }}"
+- name: Install host specific packages
+  apt:
+    name: "{{ item }}"
+    state: 'present'
+    install_recommends: False
+  with_items: "{{ extra_packages | default([]) }}"
+- name: Add admin authorized keys
+  authorized_key:
+    user: "{{ item.user }}"
+    key: "{{ item.key }}"
+  with_items: "{{ ssh_admin_keys | default([]) }}"
+- name: Add user authorized keys
+  authorized_key:
+    user: "{{ item.user }}"
+    key: "{{ item.key }}"
+  when: ssh_keys is defined
+  with_items: "{{ ssh_keys | default([]) }}"
+- name: "Build hosts file"
+  lineinfile:
+    dest: /etc/hosts
+    regexp: '.*{{ ansible_hostname }}$'
+    line: "{{ ansible_default_ipv4.address }} {{ansible_hostname}}"
+    state: present
+  when: ansible_default_ipv4.address is defined

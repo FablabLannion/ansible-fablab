@@ -1,0 +1,42 @@
+---
+- hosts: fablab.local
+  become: yes
+  become_method: sudo
+  vars_files:
+    - vars/fablab-password.yml
+    - vars/fablab.yml
+  roles:
+    - role: common
+    - role: mysql
+    - role: fablab-mysql
+    - role: openldap_server
+    - role: letsencrypt
+    - role: apache
+    - role: wordpress
+  tasks:
+    - htpasswd: 
+        path: /etc/apache2/includes/admin_auth.htpasswd 
+        name: admin
+        password: "{{ httpauth_admin_pwd }}"
+        owner: root
+        group: www-data
+        mode: 0640
+    - template:
+        src: "templates/fablab/admin_index.html"
+        dest: "/var/www/html/index.html"
+        owner: www-data
+        group: www-data
+        mode: 0644
+    - template:
+        src: "templates/fablab/phpldapadmin.config.php.j2"
+        dest: "/etc/phpldapadmin/config.php"
+    - name: "Extract MediaWiki"
+      unarchive:
+        src: "{{ mwiki_src }}"
+        dest: "{{ mwiki_dest }}"
+        copy: no
+    - name: "link mediawiki folder"
+      file:
+        src: "{{ mwiki_dest }}/mediawiki-{{ mwiki_version }}"
+        dest: "{{ mwiki_dest }}/mediawiki"
+        state: link

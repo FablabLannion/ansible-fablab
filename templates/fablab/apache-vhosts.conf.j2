@@ -1,0 +1,82 @@
+<VirtualHost *:80>
+  ServerName www.{{ domain }}
+  ServerAlias {{ domain }}
+  ErrorLog ${APACHE_LOG_DIR}/www.{{ domain }}.error.log
+  CustomLog ${APACHE_LOG_DIR}/www.{{ domain }}.access.log combined
+</VirtualHost>
+
+<VirtualHost *:80>
+  ServerName wiki.{{ domain }}
+  ErrorLog ${APACHE_LOG_DIR}/wiki.{{ domain }}.error.log
+  CustomLog ${APACHE_LOG_DIR}/wiki.{{ domain }}.access.log combined
+  Include /etc/mediawiki/apache.conf
+</VirtualHost>
+
+<VirtualHost *:80>
+  ServerName forum.{{ domain }}
+  ErrorLog ${APACHE_LOG_DIR}/forum.{{ domain }}.error.log
+  CustomLog ${APACHE_LOG_DIR}/forum.{{ domain }}.access.log combined
+  Include /etc/phpbb3/apache2.conf
+</VirtualHost>
+
+
+<VirtualHost *:443>
+  ServerName www.{{ domain }}
+  ServerAlias {{ domain }}
+  ErrorLog ${APACHE_LOG_DIR}/www.{{ domain }}.ssl.error.log
+  CustomLog ${APACHE_LOG_DIR}/www.{{ domain }}.ssl.access.log combined
+  SSLEngine on
+  SSLCipherSuite AES256+EECDH:AES256+EDH
+  SSLProtocol All -SSLv2 -SSLv3
+  SSLHonorCipherOrder On
+  SSLCompression off
+  SSLCertificateFile {{ ssl_cert }}
+  SSLCertificateKeyFile {{ ssl_cert_key }}
+
+</VirtualHost>
+<VirtualHost *:443>
+  ServerName wiki.{{ domain }}
+  ErrorLog ${APACHE_LOG_DIR}/wiki.{{ domain }}.ssl.error.log
+  CustomLog ${APACHE_LOG_DIR}/wiki.{{ domain }}.ssl.access.log combined
+  SSLEngine on
+  SSLCipherSuite AES256+EECDH:AES256+EDH
+  SSLProtocol All -SSLv2 -SSLv3
+  SSLHonorCipherOrder On
+  SSLCompression off
+  SSLCertificateFile {{ ssl_cert }}
+  SSLCertificateKeyFile {{ ssl_cert_key }}
+  Include /etc/apache2/includes/mediawiki.conf
+</VirtualHost>
+
+<VirtualHost *:443>
+  ServerName forum.{{ domain }}
+  ErrorLog ${APACHE_LOG_DIR}/forum.{{ domain }}.ssl.error.log
+  CustomLog ${APACHE_LOG_DIR}/forum.{{ domain }}.ssl.access.log combined
+  SSLEngine on
+  SSLCipherSuite AES256+EECDH:AES256+EDH
+  SSLProtocol All -SSLv2 -SSLv3
+  SSLHonorCipherOrder On
+  SSLCompression off
+  SSLCertificateFile {{ ssl_cert }}
+  SSLCertificateKeyFile {{ ssl_cert_key }}
+  Include /etc/apache2/includes/phpbb3.conf
+
+</VirtualHost>
+
+<VirtualHost *:443>
+  ServerName admin.{{ domain }}
+
+  ErrorLog ${APACHE_LOG_DIR}/admin.{{ domain }}.ssl.error.log
+  CustomLog ${APACHE_LOG_DIR}/admin.{{ domain }}.ssl.access.log combined
+  SSLEngine on
+  SSLCipherSuite AES256+EECDH:AES256+EDH
+  SSLProtocol All -SSLv2 -SSLv3
+  SSLHonorCipherOrder On
+  SSLCompression off
+  SSLCertificateFile {{ ssl_cert }}
+  SSLCertificateKeyFile {{ ssl_cert_key }}
+  Include /etc/phpmyadmin/apache.conf
+  Include /etc/phpldapadmin/apache.conf
+</VirtualHost>
+
+

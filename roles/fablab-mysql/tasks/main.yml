@@ -1,0 +1,9 @@
+---
+  - name: Create DB
+    mysql_db: name={{ item.dbname }} state=present
+    with_items:
+      - "{{ databases }}"
+  - name: Grant user
+    mysql_user: name={{ item.dbuser }} password={{ item.dbpass }} priv={{ item.dbname }}.*:ALL,GRANT state=present
+    with_items:
+      - "{{ databases }}"
